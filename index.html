@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Interactive Quiz</title>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+  };
+</script>
+<style>
+
+:root{ --bg:#ffffff; --panel:#f6f8fa; --text:#24292e; --muted:#6a737d; --primary:#0366d6; --primary2:#22863a; --border:color-mix(in srgb, var(--text) 18%, transparent); --option-bg:color-mix(in srgb, var(--panel) 88%, var(--primary) 12%); --option-hover:color-mix(in srgb, var(--panel) 80%, var(--primary) 20%); --option-active:color-mix(in srgb, var(--panel) 72%, var(--primary) 28%); --radius:16px; --app-font:'Noto Sans', 'Segoe UI', Tahoma, Arial, sans-serif; }
+body{ margin:0; font-family:var(--app-font); background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; padding:20px; box-sizing:border-box; }
+button,input,table,th,td,label,h1,h2,h3,p,div{ font-family:var(--app-font); }
+.card{ background:var(--panel); width:100%; max-width:600px; border-radius:var(--radius); padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border:1px solid var(--border); }
+h1{ margin:0 0 10px; font-size:22px; text-align:center; } .desc{ color:var(--muted); font-size:13px; margin-bottom:20px; text-align:center; line-height:1.5; }
+.quizLogoWrap{ width:162px; height:162px; border-radius:50%; overflow:hidden; margin:4px auto 18px; border:1px solid var(--border); background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; }
+.quizLogo{ width:100%; height:100%; object-fit:cover; display:block; }
+.loginIntro{ text-align:center; }
+.loginForm{ width:100%; max-width:420px; margin:0 auto; }
+.loginForm label{ text-align:left; }
+.loginForm input{ text-align:left; }
+.reviewBox{ margin-top:20px; border-top:1px solid var(--border); padding-top:18px; }
+.reviewItem{ border:1px solid var(--border); border-radius:12px; padding:14px; margin-top:12px; background:color-mix(in srgb, var(--panel) 90%, var(--primary) 10%); }
+.badge{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800; margin-bottom:8px; }
+.badge.ok{ background:rgba(34,197,94,.16); color:var(--primary2); }
+.badge.no{ background:rgba(239,68,68,.16); color:#ef4444; }
+.reviewMeta{ font-size:13px; line-height:1.55; color:var(--text); }
+.reviewMeta b{ color:var(--muted); }
+label{ font-size:10px; text-transform:uppercase; font-weight:bold; color:var(--muted); margin-bottom:4px; display:block; }
+.loginForm label{ font-size:12px; }
+.loginForm input{ padding:10px 12px; }
+input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:color-mix(in srgb, var(--panel) 92%, var(--text) 8%); color:var(--text); margin-bottom:15px; box-sizing:border-box; outline:none; }
+.loginForm input{ padding:10px 12px; }
+.timerBox{ width:max-content; min-width:118px; margin:0 auto 14px; padding:8px 16px; border-radius:999px; background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--panel) 82%), color-mix(in srgb, var(--primary2) 16%, var(--panel) 84%)); border:1px solid color-mix(in srgb, var(--primary) 42%, var(--border)); color:var(--primary2); font-size:17px; font-weight:800; letter-spacing:.04em; text-align:center; box-shadow:0 8px 22px rgba(0,0,0,.16); }
+.timeEndNotice{ margin:0 0 16px; padding:12px 14px; border-radius:14px; background:color-mix(in srgb, #ef4444 12%, var(--panel) 88%); border:1px solid color-mix(in srgb, #ef4444 46%, var(--border)); color:var(--text); text-align:center; font-size:15px; font-weight:800; }
+.btn{ background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:10px; cursor:pointer; font-weight:800; width:100%; transition:0.2s; box-shadow:0 8px 18px rgba(0,0,0,.22); }
+.btn:hover{ filter:brightness(1.1); }
+.btn-back{ background:linear-gradient(135deg, var(--primary), var(--primary2)); color:#fff; border:1px solid rgba(255,255,255,.35); box-shadow:0 0 0 3px rgba(255,255,255,.10), 0 8px 22px rgba(0,0,0,.25); }
+.btn-back:hover{ filter:brightness(1.18); box-shadow:0 0 0 4px rgba(255,255,255,.14), 0 10px 26px rgba(0,0,0,.30); }
+.opt{ display:block; padding:14px; border:1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); border-radius:10px; margin-bottom:10px; cursor:pointer; transition:0.2s; background:var(--option-bg); color:var(--text); font-weight:600; }
+.opt:hover{ background:var(--option-hover); border-color:color-mix(in srgb, var(--primary) 55%, var(--border)); } .opt.active{ border-color:var(--primary); background:var(--option-active); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent); }
+.bar{ height:6px; background:rgba(255,255,255,0.05); border-radius:3px; margin-bottom:20px; overflow:hidden; }
+.fill{ height:100%; background:var(--primary); transition:width 0.3s; }
+table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:12px; }
+th, td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+@media (min-width: 901px){ body{ overflow:hidden; } .card{ max-height:calc(100vh - 40px); overflow:auto; } }
+
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+const DATA = {"title":"Interactive Quiz","desc":"Answer all questions and review your feedback at the end.","lang":"en","randQ":true,"randA":true,"saveData":true,"classLbl":"Class","sheetUrl":"","logoUrl":"","timerMinutes":0,"hasExplanation":true,"questions":[{"q":"What is the primary role of acetylcholinesterase (cholinesterase) at the neuromuscular junction following muscle stimulation?","choices":["It pumps calcium ions back into the sarcoplasmic reticulum to initiate cross-bridge formation.","It binds directly to troponin to shift tropomyosin away from actin active sites.","It cleaves ATP on the myosin head to power the cross-bridge stroke.","It hydrolyzes acetylcholine in the synaptic cleft to allow the muscle membrane to return to its resting state."],"answerIndex":3,"explain":"Acetylcholinesterase rapidly breaks down acetylcholine into choline and acetic acid, ending depolarization of the motor end plate so repolarization can occur.","rationales":["Calcium reuptake into the sarcoplasmic reticulum is carried out by active transport pumps rather than synaptic neurotransmitter enzymes.","Troponin binding is governed by intracellular calcium levels within the sarcoplasm, not by enzymes in the synaptic cleft.","Myosin ATPase, located directly on the myosin head, is responsible for hydrolyzing ATP to fuel the power stroke.","Acetylcholinesterase rapidly breaks down acetylcholine into choline and acetic acid, ending depolarization of the motor end plate so repolarization can occur."]},{"q":"During a concentric muscle contraction, which structural region of the sarcomere narrows and can eventually disappear as actin slides over myosin?","choices":["The Z line","The A band","The H zone","The M line"],"answerIndex":2,"explain":"The H zone contains only thick filaments in a relaxed muscle; as thin filaments are pulled toward the M line during contraction, this central gap narrows and disappears.","rationales":["The Z lines mark the boundaries of the sarcomere and move closer together, but the structures themselves do not narrow or disappear.","The A band spans the entire length of the thick filaments, which remain constant in length during contraction.","The H zone contains only thick filaments in a relaxed muscle; as thin filaments are pulled toward the M line during contraction, this central gap narrows and disappears.","The M line provides structural attachment at the center of the sarcomere and remains intact during contraction."]},{"q":"In what order are motor unit types recruited as muscle force requirements increase from low-intensity effort to maximal exertion?","choices":["Type IIx→Type IIa→Type I","Type I→Type IIa→Type IIx","Type I→Type IIx→Type IIa","Type IIa→Type I→Type IIx"],"answerIndex":1,"explain":"Recruitment begins with low-threshold, fatigue-resistant slow-twitch units (Type I) and progresses to higher-threshold fast-twitch units (Type IIa, then Type IIx) as force requirements increase.","rationales":["Fast-twitch glycolytic units have high excitation thresholds and are recruited last during high-force demands rather than first.","Recruitment begins with low-threshold, fatigue-resistant slow-twitch units (Type I) and progresses to higher-threshold fast-twitch units (Type IIa, then Type IIx) as force requirements increase.","Type IIx units represent the largest, highest-threshold motor units and are activated after Type IIa units are already recruited.","Intermediate fast-twitch units (Type IIa) require greater neural drive to recruit than smaller, slow-twitch Type I units."]},{"q":"What specific molecular event triggers the detachment of a myosin head from the active site on an actin filament during cross-bridge cycling?","choices":["The release of inorganic phosphate (P\ni\n​\n\n) from the myosin head","The binding of calcium ions to tropomyosin","The binding of a new ATP molecule to the myosin head","The hydrolysis of ATP into ADP and inorganic phosphate (P\ni\n​\n\n)"],"answerIndex":2,"explain":"Binding of a new ATP molecule reduces the affinity of the myosin head for actin, causing cross-bridge detachment so the cycle can reset.","rationales":["The release of inorganic phosphate triggers the power stroke rather than cross-bridge detachment.","Calcium binds to troponin to uncover actin binding sites initially, rather than breaking the cross-bridge after a stroke.","Binding of a new ATP molecule reduces the affinity of the myosin head for actin, causing cross-bridge detachment so the cycle can reset.","ATP hydrolysis cocks the myosin head into a high-energy position after detachment has already occurred."]},{"q":"Why do motor units controlling fine, precise motor tasks (such as eye movements) produce far less maximal force than motor units in large limb muscles?","choices":["They consist exclusively of Type IIx fast glycolytic muscle fibers.","They innervate significantly fewer muscle fibers per motor neuron.","They rely solely on isometric actions rather than isotonic movements.","They lack transverse tubules for propagating action potentials."],"answerIndex":1,"explain":"A low fiber-to-neuron ratio allows precise control of force output, but limits the total amount of force the motor unit can generate.","rationales":["Precision muscles contain motor units tailored for fine control rather than exclusively high-force fast-twitch fibers.","A low fiber-to-neuron ratio allows precise control of force output, but limits the total amount of force the motor unit can generate.","Precision movements require dynamic isotonic contractions, and force capacity is governed by unit innervation size.","Transverse tubules are standard structural features present in skeletal muscle fibers to distribute action potentials."]},{"q":"An athlete performs a exercise on a specialized dynamometer that maintains a constant movement velocity regardless of the force exerted. What type of muscle action is taking place?","choices":["Isometric contraction","Isotonic eccentric contraction","Isokinetic contraction","Isotonic concentric contraction"],"answerIndex":2,"explain":"Isokinetic contractions occur at a fixed speed, where equipment adjusts resistance to match the varying force applied throughout the range of motion.","rationales":["Isometric contractions generate muscle tension without changing joint angle or overall muscle length.","Eccentric contractions involve muscle lengthening under load, regardless of whether movement speed is controlled by equipment.","Isokinetic contractions occur at a fixed speed, where equipment adjusts resistance to match the varying force applied throughout the range of motion.","Isotonic concentric contractions involve muscle shortening against a constant external load, but movement velocity changes across joint angles."]},{"q":"How does long-term aerobic endurance training promote glycogen sparing during submaximal exercise?","choices":["By increasing fat oxidation and intramuscular triglyceride utilization for ATP production","By inhibiting Krebs cycle enzymes to decrease carbohydrate breakdown","By converting slow-twitch Type I fibers into fast-twitch Type IIx fibers","By completely eliminating lactic acid production during high-intensity work"],"answerIndex":0,"explain":"Endurance adaptations enhance mitochondrial density and oxidative enzymes, shifting submaximal fuel reliance toward fats and conserving glycogen stores.","rationales":["Endurance adaptations enhance mitochondrial density and oxidative enzymes, shifting submaximal fuel reliance toward fats and conserving glycogen stores.","Aerobic adaptations increase Krebs cycle enzyme concentrations to increase total oxidative ATP production capacity.","Aerobic training enhances oxidative capacity and may shift Type II fibers toward Type I characteristics, not fast glycolytic traits.","Endurance training enhances buffering and delays lactate accumulation, but does not eliminate anaerobic glycolysis."]},{"q":"During high-intensity exertion, how does the accumulation of hydrogen ions (H\n+\n) directly contribute to peripheral muscular fatigue?","choices":["It accelerates acetylcholinesterase activity in the synaptic cleft.","It causes acute transformation of Type IIx fibers into Type I fibers.","It impairs calcium binding to troponin and reduces cross-bridge force production.","It prevents the sarcoplasmic reticulum from storing glycogen."],"answerIndex":2,"explain":"Increased intracellular H + lowers sarcoplasmic pH, competing with calcium for binding sites on troponin and diminishing cross-bridge tension.","rationales":["Hydrogen ion accumulation acts inside the muscle fiber and does not accelerate neurotransmitter breakdown in the synapse.","Metabolic accumulation causes acute fatigue rather than driving immediate structural alterations in muscle fiber phenotypes.","Increased intracellular H\n+\nlowers sarcoplasmic pH, competing with calcium for binding sites on troponin and diminishing cross-bridge tension.","Acidosis affects contractile protein sensitivity and enzyme kinetics rather than glycogen storage within organelles."]},{"q":"An increase in intramuscular concentration of the enzyme myosin ATPase following high-intensity strength training leads to which physiological outcome?","choices":["A faster rate of ATP breakdown, increasing muscle contraction speed","A reduction in the total density of contractile myofibrils","Decreased peak power output due to rapid phosphate accumulation","Elevated oxygen storage within the sarcoplasm via myoglobin"],"answerIndex":0,"explain":"Myosin ATPase catalyzes the hydrolysis of ATP on the myosin head; higher enzyme levels allow faster cross-bridge cycling and quicker force development.","rationales":["Myosin ATPase catalyzes the hydrolysis of ATP on the myosin head; higher enzyme levels allow faster cross-bridge cycling and quicker force development.","Strength adaptations increase contractile protein density and myofibril size rather than reducing structural proteins.","Increased myosin ATPase activity enhances power output and contraction velocity rather than limiting force production.","Myoglobin stores intramuscular oxygen for aerobic work and is independent of the cross-bridge enzyme myosin ATPase."]},{"q":"A maximal athletic effort lasting under 10 seconds, such as a 50-meter sprint, relies predominantly on which fiber type and primary energy pathway?","choices":["Type I fibers powered primarily by aerobic fat oxidation","Type II fibers powered primarily by aerobic glycolysis","Type I fibers powered primarily by intramuscular triglyceride stores","Type II fibers powered primarily by the phosphocreatine system"],"answerIndex":3,"explain":"Ultra short-term explosive performances require high-threshold Type II motor units and immediate energy supplied by phosphocreatine breakdown.","rationales":["Type I fibers and aerobic fat metabolism support long-duration endurance activities rather than explosive power events.","Aerobic glycolysis requires time to turn over ATP and becomes dominant in events lasting several minutes rather than under 10 seconds.","Intramuscular triglycerides provide fuel during submaximal, low-intensity continuous exercise.","Ultra short-term explosive performances require high-threshold Type II motor units and immediate energy supplied by phosphocreatine breakdown."]},{"q":"In a relaxed skeletal muscle fiber, what mechanism prevents myosin cross-bridges from continuously binding to actin filaments?","choices":["Action potentials are blocked from entering the transverse tubules.","Tropomyosin physically covers the myosin-binding active sites on actin.","Acetylcholine remains permanently bound to sarcolemma receptors.","Troponin continuously degrades ATP to prevent cross-bridge activation."],"answerIndex":1,"explain":"When intracellular calcium is low, tropomyosin lies over the active sites on actin, blocking cross-bridge attachment.","rationales":["In a resting muscle, there is no action potential generated; the structural blocking occurs directly on the actin filament.","When intracellular calcium is low, tropomyosin lies over the active sites on actin, blocking cross-bridge attachment.","Acetylcholine is rapidly broken down by cholinesterase during relaxation to clear the synaptic cleft.","Troponin regulates the positioning of tropomyosin in response to calcium binding and does not degrade ATP."]},{"q":"During repeated high-intensity muscle contractions, how does the intracellular accumulation of inorganic phosphate (P\ni\n​\n\n) contribute to peripheral fatigue?","choices":["It reduces cross-bridge binding force and inhibits calcium release from the sarcoplasmic reticulum.","It blocks action potential propagation along the motor neuron axon.","It increases the rate of oxygen binding to myoglobin.","It accelerates neurotransmitter breakdown at the motor end plate."],"answerIndex":0,"explain":"Accumulated P i ​ directly impairs cross-bridge tension generation and inhibits calcium release from the sarcoplasmic reticulum.","rationales":["Accumulated P\ni\n​\n\ndirectly impairs cross-bridge tension generation and inhibits calcium release from the sarcoplasmic reticulum.","Axonal action potential propagation depends on membrane sodium and potassium channels, not intracellular phosphate levels.","Phosphate accumulation is a metabolic byproduct of ATP hydrolysis and does not increase myoglobin oxygen affinity.","Inorganic phosphate builds up inside the muscle fiber sarcoplasm and does not alter synaptic neurotransmitter kinetics."]}]}; 
+const UI = {"name":"Full Name","class":"Class","start":"Start Quiz","next":"Next","back":"Back","finish":"Finish","retake":"Retake","rank":"Top 10 Ranking","saving":"Saving data...","result":"Result","q":"Q","tableName":"Name","tableClass":"Class","percent":"%","alertInfo":"Please fill in your details.","alertChoose":"Please choose an answer.","review":"Answer Review","questionLabel":"Question","answerLabel":"Answer","explanationLabel":"Explanation","correct":"Correct","incorrect":"Incorrect","feedbackCorrect":"Correct answer, no comment.","feedbackWrong":"Your answer does not match the key concept.","noRefNote":"No explanation was found in the uploaded question file.","timeEnd":"Time End"};
+let state = { mode:'login', idx:0, ans:[], name:'', class:'', qs:[], loading:false, ranking:[], endTime:0, remaining:0, timeEnded:false };
+let timerInterval = null;
+function esc(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function formatTime(ms){ const total = Math.max(0, Math.ceil(ms/1000)); const m = Math.floor(total/60); const s = total % 60; return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); }
+function startTimer(){ if(timerInterval) clearInterval(timerInterval); if(!DATA.timerMinutes) return; state.endTime = Date.now() + DATA.timerMinutes * 60000; timerInterval = setInterval(() => { state.remaining = state.endTime - Date.now(); if(state.remaining <= 0){ clearInterval(timerInterval); timerInterval = null; state.timeEnded = true; finish(); } else if(state.mode === 'quiz') { const el = document.getElementById('timerBox'); if(el) el.textContent = formatTime(state.remaining); } }, 1000); }
+function timerHtml(){ return DATA.timerMinutes && state.mode === 'quiz' ? '<div class="timerBox" id="timerBox">' + formatTime(state.endTime - Date.now()) + '</div>' : ''; }
+function buildReview(){
+  return '<div class="reviewBox"><h3 style="text-align:center; margin:0 0 12px;">' + UI.review + '</h3>' +
+    state.qs.map((q,i) => {
+      const picked = state.ans[i];
+      const ok = picked === q.answerIndex;
+      const userAns = picked === null || picked === undefined ? '-' : q.choices[picked];
+      const selectedRationale = q.rationales && picked !== null && picked !== undefined ? q.rationales[picked] : "";
+      const correctRationale = q.rationales ? q.rationales[q.answerIndex] : "";
+      const fb = selectedRationale || correctRationale || q.explain || (ok ? UI.feedbackCorrect : UI.feedbackWrong + " " + UI.noRefNote);
+      return '<div class="reviewItem">' +
+        '<span class="badge ' + (ok ? 'ok' : 'no') + '">' + (ok ? UI.correct : UI.incorrect) + '</span>' +
+        '<div class="reviewMeta"><b>' + UI.questionLabel + ':</b> ' + esc(q.q) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.answerLabel + ':</b> ' + esc(userAns) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.explanationLabel + ':</b> ' + esc(fb) + '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.mode==='login'){
+    const logoHtml = DATA.logoUrl ? '<div class="quizLogoWrap"><img class="quizLogo" src="' + esc(DATA.logoUrl) + '" alt="Logo"></div>' : '';
+    app.innerHTML = '<div class="loginIntro">' + logoHtml + '<h1>' + DATA.title + '</h1><p class="desc">' + DATA.desc + '</p></div>' +
+      '<div class="loginForm"><label>' + UI.name + '</label><input type="text" id="u_name" value="' + esc(state.name) + '">' +
+      '<label>' + UI.class + '</label><input type="text" id="u_class" value="' + esc(state.class) + '">' +
+      '<button class="btn" onclick="start()">' + UI.start + '</button></div>';
+  } else if(state.mode==='quiz'){
+    const q = state.qs[state.idx];
+    const backBtn = state.idx > 0 ? '<button class="btn btn-back" style="margin-top:10px;" onclick="back()">' + UI.back + '</button>' : '';
+    const finishBtn = state.idx === state.qs.length - 1 ? '<button class="btn" style="margin-top:10px;" onclick="next()">' + UI.finish + '</button>' : '';
+    app.innerHTML = timerHtml() + '<div class="bar"><div class="fill" style="width:' + ((state.idx)/state.qs.length)*100 + '%"></div></div>' +
+      '<div style="font-size:11px; color:var(--muted); margin-bottom:10px;">' + UI.q + ' ' + (state.idx+1) + ' / ' + state.qs.length + '</div>' +
+      '<h2 style="font-size:17px; margin-bottom:20px;">' + q.q + '</h2>' +
+      q.choices.map((c,i) => '<div class="opt ' + (state.ans[state.idx]===i?'active':'') + '" onclick="setAns(' + i + ')">' + c + '</div>').join('') +
+      finishBtn + backBtn;
+  } else if(state.mode==='result'){
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    let html = '<h1>' + UI.result + '</h1>' + (state.timeEnded ? '<div class="timeEndNotice">' + UI.timeEnd + '</div>' : '') + '<div style="font-size:48px; font-weight:900; color:var(--primary2);">' + pct + '% (' + score + '/' + state.qs.length + ')</div>';
+    html += buildReview();
+    if(DATA.saveData){
+      html += '<div style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;"><h3 style="text-align:center;">' + UI.rank + '</h3>';
+      if(state.loading) html += '<p>' + UI.saving + '</p>';
+      else if(state.ranking.length > 0) {
+        html += '<table><tr><th>#</th><th>' + UI.tableName + '</th><th>' + UI.tableClass + '</th><th>' + UI.percent + '</th></tr>' + 
+          state.ranking.map((r,i) => '<tr><td>' + (i+1) + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.class) + '</td><td>' + esc(r.percent) + '</td></tr>').join('') + '</table>';
+      }
+      html += '</div>';
+    }
+    html += '<button class="btn" style="margin-top:20px;" onclick="location.reload()">' + UI.retake + '</button>';
+    app.innerHTML = html;
+  }
+  if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+}
+function start(){
+  state.name = document.getElementById('u_name').value.trim(); 
+  state.class = document.getElementById('u_class').value.trim();
+  if(!state.name || !state.class) return alert(UI.alertInfo);
+  state.qs = JSON.parse(JSON.stringify(DATA.questions));
+  if(DATA.randQ) state.qs.sort(() => Math.random()-0.5);
+  if(DATA.randA) state.qs.forEach(q => {
+    const originalCorrect = q.choices[q.answerIndex];
+    const rationales = Array.isArray(q.rationales) ? q.rationales : [];
+    const pairs = q.choices.map((choice, idx) => ({ choice, rationale: rationales[idx] || "" }));
+    pairs.sort(() => Math.random()-0.5);
+    q.choices = pairs.map(p => p.choice);
+    q.rationales = pairs.map(p => p.rationale);
+    q.answerIndex = q.choices.indexOf(originalCorrect);
+  });
+  state.ans = new Array(state.qs.length).fill(null);
+  state.timeEnded = false;
+  state.mode = 'quiz'; startTimer(); render();
+}
+function setAns(i){ state.ans[state.idx] = i; if(state.idx < state.qs.length - 1){ state.idx++; } render(); }
+function back(){ if(state.idx > 0){ state.idx--; render(); } }
+function next(){
+  if(state.ans[state.idx]===null) return alert(UI.alertChoose);
+  if(state.idx < state.qs.length - 1){ state.idx++; render(); }
+  else { finish(); }
+}
+async function finish(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  state.mode = 'result'; render();
+  if(DATA.saveData && DATA.sheetUrl){
+    state.loading = true; render();
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    try {
+      await fetch(DATA.sheetUrl, { method:'POST', body: JSON.stringify({name:state.name, class:state.class, score:score, percent:pct}), mode:'no-cors' });
+      setTimeout(async () => {
+        try { const res = await fetch(DATA.sheetUrl); state.ranking = await res.json(); render(); } catch(e){}
+        state.loading = false; render();
+      }, 1500);
+    } catch(e){ state.loading = false; render(); }
+  }
+}
+render();
+</script>
+</body></html>
